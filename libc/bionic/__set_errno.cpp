@@ -31,8 +31,15 @@
 // This function is called from our assembler syscall stubs.
 // C/C++ code should just assign 'errno' instead.
 
+#ifdef LIBC_STATIC
+// hybris: Only define this function here if we are building the static libc.
+// For the dynamic libc, the __set_errno() function is in libdsyscalls.so, so
+// we can hook and override it from within libhybris.
+
 // TODO: this should be __LIBC_HIDDEN__ but was exposed in <errno.h> in the NDK.
 extern "C" int __set_errno(int n) {
   errno = n;
   return -1;
 }
+
+#endif /* LIBC_STATIC */

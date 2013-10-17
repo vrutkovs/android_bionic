@@ -269,7 +269,6 @@ libc_bionic_src_files := \
     bionic/raise.cpp \
     bionic/sbrk.cpp \
     bionic/scandir.cpp \
-    bionic/__set_errno.cpp \
     bionic/setlocale.cpp \
     bionic/signalfd.cpp \
     bionic/sigwait.cpp \
@@ -372,6 +371,9 @@ libc_upstream_netbsd_src_files := \
 ifeq ($(TARGET_ARCH),arm)
 libc_common_src_files += \
 	string/strncmp.c \
+
+libc_static_common_src_files += \
+    bionic/__set_errno.cpp
 
 # These files need to be arm so that gdbserver
 # can set breakpoints in them without messing
@@ -802,6 +804,32 @@ LOCAL_SYSTEM_SHARED_LIBRARIES :=
 
 include $(BUILD_STATIC_LIBRARY)
 
+# ========================================================
+# libdsyscalls.so
+# ========================================================
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
+	$(libc_arch_static_src_files) \
+	$(libc_static_common_src_files) \
+	bionic/dlmalloc.c \
+	bionic/malloc_debug_common.cpp \
+	hybris/libdsyscalls.cpp
+
+LOCAL_C_INCLUDES := $(libc_common_c_includes)
+LOCAL_CFLAGS := $(libc_common_cflags)
+
+LOCAL_MODULE:= libdsyscalls
+
+LOCAL_SHARED_LIBRARIES := libdl
+LOCAL_WHOLE_STATIC_LIBRARIES := libc_common
+LOCAL_SYSTEM_SHARED_LIBRARIES :=
+
+LOCAL_LDFLAGS := -Wl,--exclude-libs=libgcc.a
+
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_SHARED_LIBRARY)
 
 # ========================================================
 # libc.a
@@ -872,7 +900,7 @@ LOCAL_REQUIRED_MODULES := tzdata
 # create an "cloaked" dependency on libgcc.a in libc though the libraries, which is not what
 # you wanted!
 
-LOCAL_SHARED_LIBRARIES := libdl
+LOCAL_SHARED_LIBRARIES := libdl libdsyscalls
 LOCAL_WHOLE_STATIC_LIBRARIES := libc_common
 LOCAL_SYSTEM_SHARED_LIBRARIES :=
 
@@ -938,6 +966,7 @@ LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 LOCAL_SHARED_LIBRARIES := libc libdl
 LOCAL_WHOLE_STATIC_LIBRARIES := libc_common
 LOCAL_SYSTEM_SHARED_LIBRARIES :=
+LOCAL_ALLOW_UNDEFINED_SYMBOLS := true
 
 # Don't install on release build
 LOCAL_MODULE_TAGS := eng debug
