@@ -424,7 +424,7 @@ static int __libc_write_log(int priority, const char* tag, const char* msg) {
   static int main_log_fd = -1;
   if (main_log_fd == -1) {
     ScopedPthreadMutexLocker locker(&gLogInitializationLock);
-    main_log_fd = TEMP_FAILURE_RETRY(open("/dev/log/main", O_CLOEXEC | O_WRONLY));
+    main_log_fd = TEMP_FAILURE_RETRY(open("/dev/alog/main", O_CLOEXEC | O_WRONLY));
     if (main_log_fd == -1) {
       return -1;
     }
@@ -468,7 +468,7 @@ static int __libc_android_log_event(int32_t tag, char type, const void* payload,
   static int event_log_fd = -1;
   if (event_log_fd == -1) {
     ScopedPthreadMutexLocker locker(&gLogInitializationLock);
-    event_log_fd = TEMP_FAILURE_RETRY(open("/dev/log/events", O_CLOEXEC | O_WRONLY));
+    event_log_fd = TEMP_FAILURE_RETRY(open("/dev/alog/events", O_CLOEXEC | O_WRONLY));
   }
   return TEMP_FAILURE_RETRY(writev(event_log_fd, vec, 3));
 }
